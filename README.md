@@ -98,3 +98,12 @@ sweep.py       # multi-ticker sweep with honest aggregate
 ## Disclaimer
 
 This is an educational evaluation tool. Nothing here is investment advice, and no result from this framework should be read as a recommendation to buy or sell anything.
+
+
+## Attribution
+
+The `model/` directory is vendored unmodified from
+[Kronos](https://github.com/shiyu-coder/Kronos) (Shi et al., AAAI 2026),
+MIT License — see `model/LICENSE`. All evaluation code — the walk-forward
+engine, metrics, baselines, integrity tests, and CLIs — is original to
+this project, MIT License — see `LICENSE`.
