@@ -83,6 +83,15 @@ The sweep aggregates across tickers and asks the question single-ticker backtest
 - **The no-lookahead tests guarantee the evaluator's contract**, not the internals of third-party adapters — an adapter could in principle smuggle in outside data, as the cheater test itself demonstrates. Adapters are short and auditable by design.
 - **Synthesized future timestamps** (business-day calendar) can differ from real trading calendars around holidays; the effect on Kronos's calendar features is negligible but nonzero.
 - **One period, one frequency.** Results are for daily bars over ~2022–2026. Different horizons, frequencies, or regimes are open questions — which the framework exists to answer.
+- **This is "pseudo" (as-if ex ante) forecasting, not actual forecasting.** Forecasts
+  are reconstructed after the fact under no-lookahead constraints — they were not
+  logged in a public ledger before outcomes existed. The integrity tests make the
+  reconstruction honest, but the distinction (Mueller, *Forecasting manifesto*, 2025)
+  is real: nothing here was pre-registered before the results were known.
+- **Prices are back-adjusted.** Data uses split/dividend-adjusted closes, which are
+  retroactively rescaled — so the series the model saw is not byte-for-byte what a
+  live forecaster would have seen on those dates. Nearly harmless for close-to-close
+  direction, but a genuine data-vintage caveat.
 
 ## Project structure
 
