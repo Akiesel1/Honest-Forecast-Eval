@@ -136,8 +136,11 @@ def main():
 
     table = pd.DataFrame(headline_rows)
     full = pd.concat(all_rows, ignore_index=True)
-    table_path = os.path.join(args.output_dir, f"sweep_{forecaster.name}_headline.csv")
-    full_path = os.path.join(args.output_dir, f"sweep_{forecaster.name}_full.csv")
+    # Timestamped so a re-run can never destroy a previous sweep's results --
+    # the run-1 IC data for this project only survived by luck, in a chat log.
+    stamp = pd.Timestamp.now().strftime("%Y%m%d-%H%M%S")
+    table_path = os.path.join(args.output_dir, f"sweep_{forecaster.name}_{stamp}_headline.csv")
+    full_path = os.path.join(args.output_dir, f"sweep_{forecaster.name}_{stamp}_full.csv")
     table.to_csv(table_path, index=False)
     full.to_csv(full_path, index=False)
 

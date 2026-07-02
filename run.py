@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import time
 
 from data.loader import load_ohlcv
 from evaluation import summarize, verdict, walk_forward
@@ -81,8 +82,12 @@ def main():
                        step=args.step, max_evals=args.max_evals)
     summ = summarize(res, args.horizon)
 
-    # Persist raw + summary so runs are comparable and reproducible.
-    tag = f"{args.ticker}_{forecaster.name}"
+    # Persist raw + summary so runs are comparable and reproducible. The
+    # timestamp makes every run self-preserving: a re-run can never silently
+    # destroy the previous results -- which matters in a framework whose whole
+    # thesis is "replicate and compare".
+    stamp = time.strftime("%Y%m%d-%H%M%S")
+    tag = f"{args.ticker}_{forecaster.name}_{stamp}"
     res.to_csv(os.path.join(args.output_dir, f"{tag}_raw.csv"), index=False)
     summ.to_csv(os.path.join(args.output_dir, f"{tag}_summary.csv"), index=False)
 
