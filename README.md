@@ -92,7 +92,73 @@ The sweep aggregates across tickers and asks the question single-ticker backtest
   retroactively rescaled — so the series the model saw is not byte-for-byte what a
   live forecaster would have seen on those dates. Nearly harmless for close-to-close
   direction, but a genuine data-vintage caveat.
+# Preregistered Study #2: Does the null result replicate on uncorrelated assets?
 
+This is a preregistration in the spirit of Mueller's *Forecasting manifesto* (2025):
+all choices below are declared **before any forecast is run**. Results will be
+published as a comment on this issue **regardless of outcome**. The issue
+timestamp is the ledger entry.
+
+## Question
+
+Study #1 (see README) found no forecasting edge for Kronos-small across 12
+tickers — but those tickers overlapped heavily (US mega-cap tech and the indices
+containing it), weakening the "expected by chance" comparison. This study asks:
+**does the null result replicate on a deliberately diversified, low-correlation
+asset set?**
+
+## Hypothesis (default)
+
+Kronos-small shows no detectable forecasting edge: it will not significantly beat
+the naive direction baseline, will not beat a random walk on forecast error, and
+will show no statistically significant positive IC — on any asset, in both runs.
+
+## Asset set (12 — zero overlap with Study #1, chosen to minimize cross-correlation)
+
+| Ticker | Rationale |
+|---|---|
+| IWM | US small caps |
+| EFA | International developed equity |
+| EEM | Emerging markets equity |
+| GLD | Gold |
+| TLT | Long-duration US Treasuries |
+| XLU | Utilities (defensive equity) |
+| VNQ | US REITs |
+| DBA | Agriculture commodities |
+| UNH | Single name: healthcare |
+| DE  | Single name: industrials |
+| NEE | Single name: utilities/renewables |
+| ETH-USD | Crypto, non-BTC |
+
+## Fixed configuration (identical to Study #1)
+
+- Data: ~4 years of daily bars via yfinance (auto-adjusted; vintage caveat per README)
+- lookback=256, horizon=5, step=5, max_evals=150, model=kronos-small, sample_count=5
+- Command: `python sweep.py --model kronos --model-pkg-dir . --tickers IWM EFA EEM GLD TLT XLU VNQ DBA UNH DE NEE ETH-USD`
+
+## Pre-declared decision thresholds
+
+- Directional edge: binomial p < 0.05 vs best naive constant baseline
+- Error edge: RMSE ratio < 0.98 vs random walk
+- Rank signal: IC > 0 with Spearman p < 0.05
+- Aggregate: count of passing tickers compared against α·N expected by chance
+
+## Replication rule
+
+The sweep runs **twice**, on different days. A result on any metric counts as
+signal **only if it appears in both runs**. (Motivated by Study #1, where a
+suggestive IC pattern in run 1 flipped sign in run 2.)
+
+## Exclusion clause (declared now, not decided later)
+
+If a ticker has insufficient history or a data error at run time, it is
+**excluded and noted — not replaced**. No other deviations are permitted; any
+forced deviation will be disclosed in the results comment.
+
+## Publication commitment
+
+Both runs' full output tables will be posted as a follow-up comment on this
+issue, win or lose, along with the verdicts produced by the framework.
 ## Project structure
 
 ```
