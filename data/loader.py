@@ -49,3 +49,66 @@ def load_ohlcv(
     df = df.sort_index()
     print(f"Got {len(df)} bars: {df.index.min().date()} -> {df.index.max().date()}")
     return df
+
+
+# ---------------------------------------------------------------------------
+# FX study additions. Same rule as load_ohlcv: fetch and clean, nothing else.
+# No lagging, no model logic, no evaluation logic lives here.
+# ---------------------------------------------------------------------------
+
+FRED_CSV_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={series_id}"
+
+
+def load_fred_series(
+    series_id: str,
+    start: str | None = None,
+    end: str | None = None,
+) -> pd.Series:
+    """Fetch one FRED series (public CSV endpoint, no API key) as a clean Series.
+
+    Index is the OBSERVATION date as FRED reports it (for monthly series, the
+    first day of the month the value describes), oldest first.
+
+    Two honesty notes for callers:
+
+    * The observation date is NOT the date the value became public. Applying a
+      publication lag is the forecaster's job, not the loader's.
+    * This endpoint serves the latest REVISED values, not the original vintage.
+      A live forecaster may have seen slightly different numbers.
+    """
+    url = FRED_CSV_URL.format(series_id=series_id)
+    print(f"Fetching FRED series {series_id} ...")
+    raw = pd.read_csv(url, na_values=["."])
+    if series_id not in raw.columns or len(raw) == 0:
+        raise ValueError(f"FRED returned no usable data for {series_id}. Got: {list(raw.columns)}")
+
+    s = pd.Series(
+        pd.to_numeric(raw[series_id], errors="coerce").to_numpy(dtype=float),
+        index=pd.to_datetime(raw[raw.columns[0]]),
+        name=series_id,
+    ).dropna().sort_index()
+    if start is not None:
+        s = s[s.index >= pd.Timestamp(start)]
+    if end is not None:
+        s = s[s.index <= pd.Timestamp(end)]
+    if s.empty:
+        raise ValueError(f"FRED series {series_id} is empty for the requested dates.")
+    print(f"Got {len(s)} observations: {s.index.min().date()} -> {s.index.max().date()}")
+    return s
+
+
+def align_on_common_dates(frames: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+    """Restrict several OHLCV frames to the dates present in ALL of them.
+
+    Used for FX triangles, where a residual only exists on days when the cross
+    and both legs all have a bar. Rows are dropped, never filled.
+    """
+    if not frames:
+        raise ValueError("No frames to align.")
+    common = None
+    for df in frames.values():
+        common = df.index if common is None else common.intersection(df.index)
+    common = common.sort_values()
+    if len(common) == 0:
+        raise ValueError("The supplied frames share no dates.")
+    return {name: df.loc[common] for name, df in frames.items()}

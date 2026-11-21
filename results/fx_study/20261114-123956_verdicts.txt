@@ -1,0 +1,2 @@
+STUDY A VERDICT: NULL -- UIP does not meet the preregistered pass rule against a random walk. 0/18 pair-horizon cells pass all three metrics (dir 0, error 0, IC 0; chance alone predicts about 0.9 per single metric); median RMSE ratio vs random walk 0.9998; 0 cells have a significantly NEGATIVE IC.
+STUDY B VERDICT: NULL -- triangular mean reversion does not meet the preregistered pass rule net of cost. 0/3 triangles pass the forecast metrics gross; 0/3 also pass net of cost.
